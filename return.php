@@ -1,7 +1,14 @@
 <?php
 
 
-$Users = ["id"];
+$Users = [
+
+  ['id' => 1,  'name' => 'Ellie'],
+  ['id' => 2, 'name' => 'john']
+
+
+
+];
 
 function findUser($id, $Users)
 
@@ -11,6 +18,22 @@ function findUser($id, $Users)
             {
               return $User;
             }
-              return null;
+             
         }
+         return null;
       }
+
+
+
+
+  $result = findUser(2, $Users);
+
+  if ($result)
+    {
+      echo "found:" . $result['name'] ;
+
+    }
+
+    else {
+      echo "no";
+    }
