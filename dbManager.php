@@ -41,3 +41,9 @@ class DbManager {
  'dbpwd' => '123',
  'dbuser' => 'admin',
  ];
+
+
+
+ $this->lastid = [];
+
+ $this->insertCollection ="";
