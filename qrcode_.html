@@ -1,0 +1,472 @@
+<?php
+// mobile_scanner.php
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Sien - QR Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .scanner-section {
+            background: white;
+            padding: 20px;
+            margin-top: 2px;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .user-info label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .user-info input, .user-info select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .scan-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scan-button {
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .scan-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .scan-button.manual {
+            background: #48bb78;
+        }
+        
+        .scan-button.manual:hover {
+            background: #38a169;
+        }
+        
+        #video-container {
+            display: none;
+            position: relative;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 3px solid #48bb78;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+        }
+        
+        #manual-entry {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        #manual-entry input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .submit-button:hover {
+            background: #38a169;
+        }
+        
+        .result-section {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            display: none;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .delivery-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .detail-value {
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .accept-button {
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .reject-button {
+            padding: 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 LA SIEN ERP</h1>
+            <p>Delivery Scanner System</p>
+        </div>
+        
+        <div class="scanner-section">
+            <div class="user-info">
+                <label>Your Name:</label>
+                <input type="text" id="officer-name" placeholder="Enter your name">
+                
+                <label style="margin-top: 15px;">Your Role:</label>
+                <select id="officer-role">
+                    <option value="">Select Role</option>
+                    <option value="store_officer">Store Officer</option>
+                    <option value="gate_man">Gate Man</option>
+                    <option value="supervisor">Supervisor</option>
+                </select>
+            </div>
+            
+            <div class="scan-methods">
+                <button class="scan-button" onclick="startCamera()">
+                    📷<br>Scan QR Code
+                </button>
+                <button class="scan-button manual" onclick="showManualEntry()">
+                    ⌨️<br>Enter Code
+                </button>
+            </div>
+            
+            <div id="video-container">
+                <video id="video" playsinline></video>
+                <div class="video-overlay"></div>
+                <button class="scan-button" onclick="stopCamera()" style="margin-top: 10px;">
+                    Stop Camera
+                </button>
+            </div>
+            
+            <div id="manual-entry">
+                <input type="text" id="qr-code-input" placeholder="Enter QR Code" maxlength="12">
+                <button class="submit-button" onclick="lookupCode()">Lookup Code</button>
+            </div>
+        </div>
+        
+        <div class="result-section" id="result-section">
+            <!-- Results will be shown here -->
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+        let html5QrCode;
+        
+        function startCamera() {
+            const officerName = document.getElementById('officer-name').value;
+            const officerRole = document.getElementById('officer-role').value;
+            
+            if (!officerName || !officerRole) {
+                alert('Please enter your name and select your role first');
+                return;
+            }
+            
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('manual-entry').style.display = 'none';
+            
+            html5QrCode = new Html5Qrcode("video");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess,
+                onScanError
+            );
+        }
+        
+        function stopCamera() {
+            if (html5QrCode) {
+                html5QrCode.stop();
+                document.getElementById('video-container').style.display = 'none';
+            }
+        }
+        
+        function showManualEntry() {
+            const officerName = document.getElementById('officer-name').value;
+            const officerRole = document.getElementById('officer-role').value;
+            
+            if (!officerName || !officerRole) {
+                alert('Please enter your name and select your role first');
+                return;
+            }
+            
+            stopCamera();
+            document.getElementById('manual-entry').style.display = 'block';
+            document.getElementById('qr-code-input').focus();
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            stopCamera();
+            processQRCode(decodedText);
+        }
+        
+        function onScanError(errorMessage) {
+            // Ignore scan errors
+        }
+        
+        function lookupCode() {
+            const qrCode = document.getElementById('qr-code-input').value.trim().toUpperCase();
+            
+            if (!qrCode) {
+                alert('Please enter a QR code');
+                return;
+            }
+            
+            processQRCode(qrCode);
+        }
+        
+        function processQRCode(qrCode) {
+            const officerName = document.getElementById('officer-name').value;
+            const officerRole = document.getElementById('officer-role').value;
+            
+            // Show loading
+            document.getElementById('result-section').innerHTML = '<p style="text-align:center;">Loading...</p>';
+            document.getElementById('result-section').style.display = 'block';
+            
+            // Fetch delivery details
+            fetch('get_delivery_details.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `qr_code=${qrCode}&officer_name=${officerName}&officer_role=${officerRole}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.statuscode === 0) {
+                    showDeliveryDetails(data.data, qrCode);
+                } else {
+                    showError(data.status);
+                }
+            })
+            .catch(error => {
+                showError('Network error. Please try again.');
+            });
+        }
+        
+        function showDeliveryDetails(delivery, qrCode) {
+            let itemsHTML = '';
+            if (delivery.item_details && delivery.item_details.length > 0) {
+                itemsHTML = '<h3 style="margin-top: 20px;">📦 Items:</h3>';
+                delivery.item_details.forEach(item => {
+                    itemsHTML += `
+                        <div class="detail-item">
+                            <span class="detail-label">${item.item_name || 'Unknown'}</span>
+                            <span class="detail-value">Qty: ${item.quantity || 'N/A'} ${item.unit || ''}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('result-section').innerHTML = `
+                <div class="result-success">
+                    <h2 style="color: #28a745; margin-bottom: 10px;">✅ Delivery Found</h2>
+                    <p style="font-size: 18px; font-weight: bold; letter-spacing: 2px;">${qrCode}</p>
+                </div>
+                
+                <div class="delivery-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Delivery Type:</span>
+                        <span class="detail-value">${delivery.delivery_type.toUpperCase()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reference ID:</span>
+                        <span class="detail-value">${delivery.reference_id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Supplier:</span>
+                        <span class="detail-value">${delivery.supplier_name}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">${delivery.status.toUpperCase()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created:</span>
+                        <span class="detail-value">${delivery.created_at}</span>
+                    </div>
+                    
+                    ${itemsHTML}
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="accept-button" onclick="receiveDelivery('${qrCode}', 'received')">
+                        ✅ Accept Delivery
+                    </button>
+                    <button class="reject-button" onclick="receiveDelivery('${qrCode}', 'rejected')">
+                        ❌ Reject Delivery
+                    </button>
+                </div>
+            `;
+        }
+        
+        function showError(message) {
+            document.getElementById('result-section').innerHTML = `
+                <div class="result-error">
+                    <h2 style="color: #dc3545; margin-bottom: 10px;">❌ Error</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function receiveDelivery(qrCode, action) {
+            const officerName = document.getElementById('officer-name').value;
+            const officerRole = document.getElementById('officer-role').value;
+            
+            if (confirm(`Are you sure you want to ${action} this delivery?`)) {
+                fetch('process_delivery.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `qr_code=${qrCode}&action=${action}&officer_name=${officerName}&officer_role=${officerRole}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.statuscode === 0) {
+                        alert(`✅ Delivery ${action} successfully!`);
+                        location.reload();
+                    } else {
+                        alert(`❌ Error: ${data.status}`);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
