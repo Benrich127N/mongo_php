@@ -16,14 +16,22 @@ $pipeline =[
 ['Project' => ['name' => 1,
 'email' => 1,
 
-]]
+],],
 
 
 
 
 
-]
+],
+
+['$match' => ['status' => 'active']],
 
 
+
+['$group' => ['_id' => '$role']],
+
+
+
+'totalusers' => ['sum' => 1],
 
 ];
