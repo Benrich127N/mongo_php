@@ -32,4 +32,7 @@ class Productioncontroller extends validator
 
     $validated = $this->validateDate($data);
   }
+
+
+  
 }

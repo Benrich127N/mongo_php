@@ -7,8 +7,10 @@ class validator {
     {
 
     $bless = $data;
-      echo 'gooo' . $data;
-    }
+      // echo 'gooo' . $data;
 
+      return $bless;
+
+    }
 
 }
